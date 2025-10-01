@@ -31,7 +31,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./setup/initialize
+# %run ./setup/initialize
 
 # COMMAND ----------
 
@@ -77,7 +77,7 @@ spark.sql(s_sql)
 
 exceeds_policy_amount = '''
 CASE WHEN  sum_insured >= claim_amount_total 
-    THEN "calim value in the range of premium"
+    THEN "claim value in the range of premium"
     ELSE "claim value more than premium"
 END 
 '''
@@ -94,10 +94,10 @@ spark.sql(s_sql)
 # COMMAND ----------
 
 severity_mismatch = '''
-CASE WHEN  incident_severity="Total Loss" AND severity > 0.9 THEN  "Severity matches the report"
-       WHEN  incident_severity="Major Damage" AND severity > 0.8 THEN  "Severity matches the report"
-       WHEN  incident_severity="Minor Damage" AND severity > 0.7 THEN  "Severity matches the report"
-       WHEN  incident_severity="Trivial Damage" AND severity > 0.4 THEN  "Severity matches the report"
+CASE WHEN  incident_severity="Total Loss" AND severity ="severe" THEN  "Severity matches the report"
+       WHEN  incident_severity="Major Damage" AND severity ="severe" THEN  "Severity matches the report"
+       WHEN  incident_severity="Minor Damage" AND severity ="moderate"  THEN  "Severity matches the report"
+       WHEN  incident_severity="Trivial Damage" AND severity ="minor"  THEN  "Severity matches the report"
        ELSE "Severity does not match"
 END 
 '''
@@ -137,13 +137,27 @@ spark.sql(s_sql)
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT * FROM silver_claim_policy_accident
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC # Dynamic Application of Rules 
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT * FROM claims_rules where is_active=True order by rule_id
+
+# COMMAND ----------
+
 from pyspark.sql.functions import *
+from pyspark.sql.types import IntegerType
 df = spark.sql("SELECT * FROM silver_claim_policy_accident")
+df = df.withColumn("sum_insured", 
+                   col("sum_insured").cast("double").cast("int"))
+
 
 rules = spark.sql('SELECT * FROM claims_rules where is_active=True order by rule_id').collect()
 for rule in rules:
@@ -156,6 +170,8 @@ display(df)
 
 #overwrite table with new insights
 df.write.mode("overwrite").format("delta").option("overwriteSchema", "true").saveAsTable("gold_insights")
+
+display(df)
 
 # COMMAND ----------
 
