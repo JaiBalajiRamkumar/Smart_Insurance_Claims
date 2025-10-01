@@ -59,7 +59,7 @@ config = {
   'Policy_path': f'{volume_base_path}/data_sources/Policy',
   'Claims_path': f'{volume_base_path}/data_sources/Claims',
   'Accidents_path': f'{volume_base_path}/data_sources/Accidents',
-  'Accident_metadata_path': f'{volume_base_path}/data_sources/Accident_metadata',
+  'Accident_metadata_path': f'{volume_base_path}/data_sources/Accidents/image_metadata.csv',
   'prediction_path': f'{volume_base_path}/predictions_delta',
   
   # --- THIS IS THE FIX ---

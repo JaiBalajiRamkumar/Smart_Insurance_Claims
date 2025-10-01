@@ -11,49 +11,43 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install geopy
+# %run ./setup/initialize
 
 # COMMAND ----------
 
-# MAGIC %run ./setup/initialize
-
-# COMMAND ----------
-
-import geopy
-import pandas as pd
 import pyspark.sql.functions as F
 
-def get_lat_long(df, geolocator, address_field = "address", lat_field="latitude", long_field="longitude"):
-  location = geolocator.geocode(df[address_field])
-  df[lat_field] = location.latitude
-  df[long_field] = location.longitude
-  return df
-
-geolocator = geopy.Nominatim(user_agent="claim_lat_long", timeout=None)
-
-# COMMAND ----------
 
 policy_claim_df = spark.table("silver_claim_policy")
 display(policy_claim_df)
 
 # COMMAND ----------
 
-policy_claim_with_address = policy_claim_df.withColumn("address", F.concat(F.col("BOROUGH"), F.lit(", "), F.col("ZIP_CODE").cast("int").cast("string")))
+policy_claim_with_address = policy_claim_df.withColumn("ZIP_CODE", F.col("ZIP_CODE").cast("double").cast("int")).withColumn("address", F.concat(F.col("BOROUGH"), F.lit(", "), F.col("ZIP_CODE").cast("double").cast("int").cast("string")))
 display(policy_claim_with_address)
 
 # COMMAND ----------
 
-policy_claim_with_address_pd = policy_claim_with_address.where(F.col("address").isNotNull()).toPandas()
-unique_address = pd.DataFrame()
-unique_address["address"] = policy_claim_with_address_pd.address.unique()
-unique_address = unique_address.apply(get_lat_long, axis=1, geolocator=geolocator)
-display(unique_address)
+
+
+zip_codes_path = "/Volumes/workspace/default/resource/zip_lat_long.csv"
+
+
+# Read the zip code reference data and prepare it for joining
+unique_address_df = spark.read.format("csv").option("header", "true").load(zip_codes_path) \
+    .select(
+        F.col("ZIP").alias("ZIP_CODE"),
+        F.col("LAT").alias("latitude"),
+        F.col("LNG").alias("longitude")
+    )
+
+
 
 # COMMAND ----------
 
-unique_address_df = spark.createDataFrame(unique_address)
+# unique_address_df = spark.createDataFrame(unique_address)
 
-policy_claim_lat_long = policy_claim_with_address.join(unique_address_df, on="address")
+policy_claim_lat_long = policy_claim_with_address.join(unique_address_df, on="ZIP_CODE")
 display(policy_claim_lat_long)
 
 # COMMAND ----------
