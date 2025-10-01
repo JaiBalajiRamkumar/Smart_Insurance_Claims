@@ -11,7 +11,8 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install geopy git+https://github.com/amesar/mlflow-export-import/#egg=mlflow-export-import
+# %pip install git+https://github.com/mlflow/mlflow-export-import/#egg=mlflow-export-import databricks-cli tabulate geopy
+%pip install tabulate geopy
 
 # COMMAND ----------
 
@@ -50,7 +51,6 @@ print(f"Volume Path: {volume_base_path}")
 
 # COMMAND ----------
 
-# Configuration now uses the UC Volume path for all file locations.
 config = {
   'catalog_name': catalog_name,
   'schema_name': schema_name,
@@ -61,7 +61,11 @@ config = {
   'Accidents_path': f'{volume_base_path}/data_sources/Accidents',
   'Accident_metadata_path': f'{volume_base_path}/data_sources/Accident_metadata',
   'prediction_path': f'{volume_base_path}/predictions_delta',
-  'model_input_dir' : f'{volume_base_path}/severity_model/Model',
+  
+  # --- THIS IS THE FIX ---
+  # The input directory is 'severity_model', not 'severity_model/Model'
+  'model_input_dir' : f'{volume_base_path}/model',
+  
   'image_dir' : f'{volume_base_path}/images',
   'damage_severity_model_experiment' : f'/Users/{username}/car_damage_severity',
   'damage_severity_model_name'   :  f'{catalog_name}.{schema_name}.damage_severity_model', # UC Model Name
@@ -95,12 +99,12 @@ def setup():
   
   print("Creating necessary subdirectories inside the volume...")
   dbutils.fs.mkdirs(f"{volume_base_path}/data_sources")
-  dbutils.fs.mkdirs(f"{volume_base_path}/severity_model")
+  dbutils.fs.mkdirs(f"{volume_base_path}/model")
   dbutils.fs.mkdirs(f"{volume_base_path}/images")
 
 
 # Run the setup process
-tear_down()
+#tear_down()
 setup()
 
 # COMMAND ----------
@@ -128,7 +132,14 @@ setup()
 
 # COMMAND ----------
 
-# The source path must start with 'file:/' to indicate it's on the local driver filesystem.
-# The destination is the UC Volume path.
-print("Copying files from driver to UC Volume...")
-dbutils.fs.cp("file:/tmp/resource_bundle/Model", getParam("model_input_dir"), recur
+# # The source path must start with 'file:/' to indicate it's on the local driver filesystem.
+# # The destination is the UC Volume path.
+# print("Copying files from driver to UC Volume...")
+# dbutils.fs.cp("file:/tmp/resource_bundle/Model", getParam("model_input_dir"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/images", getParam("image_dir"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/images", getParam("Accidents_path"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/image_metadata", getParam("Accident_metadata_path"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/Telematics", getParam("Telematics_path"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/Policy", getParam("Policy_path"), recurse=True)
+# dbutils.fs.cp("file:/tmp/resource_bundle/Claims", getParam("Claims_path"), recurse=True)
+# print("File copy complete.")

@@ -4,6 +4,10 @@
 
 # COMMAND ----------
 
+# MAGIC %run ./setup
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Configuration Metadata (from UC Setup)
 

@@ -118,6 +118,7 @@ print("Model registration complete!")
 # MAGIC ## Display Model Link
 
 # COMMAND ----------
+
 host_name = spark.conf.get("spark.databricks.workspaceUrl")
 if host_name:
     uri = f"https://{host_name}/explore/data/models/{model_name}"
