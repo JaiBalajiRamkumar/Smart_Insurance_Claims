@@ -34,7 +34,7 @@ def display_experiment_uri(experiment_name):
 def display_registered_model_uri(model_name):
     """Displays a clickable link to a Registered Model in UC."""
     if host_name:
-        # For UC models, the link format is slightly different
+        # For UC models, the link format is to the Catalog Explorer
         uri = f"https://{host_name}/explore/data/models/{model_name}"
         displayHTML(f'<b>Registered Model URI:</b> <a href="{uri}">{uri}</a>')
 
@@ -45,7 +45,7 @@ def display_registered_model_uri(model_name):
 
 # COMMAND ----------
 
-# The model name is now a 3-level UC name: <catalog>.<schema>.<model>
+# The model name is a 3-level UC name: <catalog>.<schema>.<model>
 model_name = getParam("damage_severity_model_name")
 print(f"Unity Catalog Model Name: {model_name}")
 
@@ -55,9 +55,8 @@ print(f"Experiment Name: {experiment_name}")
 
 # The source directory for the model files, now on a UC Volume
 input_dir = getParam("model_input_dir")
-# Note: mlflow-export-import needs a 'dbfs:/' prefix for volume paths
-if not input_dir.startswith("dbfs:"):
-    input_dir_dbfs = "dbfs:" + input_dir
+# mlflow-export-import needs a 'dbfs:/' prefix for volume paths
+input_dir_dbfs = "dbfs:" + input_dir
 print(f"Model Input Directory (on Volume): {input_dir_dbfs}")
 
 # COMMAND ----------
