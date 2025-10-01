@@ -4,11 +4,6 @@
 
 # COMMAND ----------
 
-import re
-import pandas as pd
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC #### Configuration Metadata (from UC Setup)
 
@@ -16,8 +11,11 @@ import pandas as pd
 
 # This config view is created in the main 'setup.py' notebook.
 # This ensures all notebooks use the same UC paths and names.
-config_df = spark.sql("SELECT * FROM smart_claims_config")
-config = config_df.toPandas().to_dict(orient='records')[0]
+try:
+    config_df = spark.sql("SELECT * FROM smart_claims_config")
+    config = config_df.toPandas().to_dict(orient='records')[0]
+except:
+    raise Exception("Could not find 'smart_claims_config'. Please run the main 'setup.py' notebook first.")
 
 def getParam(s):
   return config[s]
@@ -25,7 +23,7 @@ def getParam(s):
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Use Schema
+# MAGIC #### Use Catalog and Schema
 
 # COMMAND ----------
 
